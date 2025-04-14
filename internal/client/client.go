@@ -1,17 +1,15 @@
-package main
+package client
 
 import (
 	"context"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
-	"os"
-	"os/signal"
 	"time"
 	log "github.com/sirupsen/logrus"
 )
 
-func main() {
-	mcpClient, err := createClient()
+func StartClient(command string) {
+	mcpClient, err := createClient(command)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,13 +22,10 @@ func main() {
 	for _, t := range tools.Tools {
 		log.Infof("Tool: %s, Description: %s", t.Name, t.Description)
 	}
-
-
-	shutdownhandler()
 }
 
-func createClient() (*client.StdioMCPClient, error) {
-	client, err := client.NewStdioMCPClient("../server/mcp-server", []string{})
+func createClient(command string) (*client.StdioMCPClient, error) {
+	client, err := client.NewStdioMCPClient(command, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -49,14 +44,4 @@ func createClient() (*client.StdioMCPClient, error) {
 
 	_, err = client.Initialize(ctx, initRequest)
 	return client, err
-}
-
-func shutdownhandler() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	for range c {
-		log.Info("about to shutdown the app.....")
-		os.Exit(0)
-		// sig is a ^C, handle it
-	}
 }

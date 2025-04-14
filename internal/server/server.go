@@ -1,20 +1,19 @@
-package main
+package server
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
+    "context"
+    "encoding/json"
+    "fmt"
+    "github.com/mark3labs/mcp-go/mcp"
+    "github.com/mark3labs/mcp-go/server"
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nats.go/micro"
-	log "github.com/sirupsen/logrus"
-	"time"
-	"os"
+    "github.com/nats-io/nats.go/micro"
+    log "github.com/sirupsen/logrus"
+    "time"
 )
 
-func main() {
-	nc, err := nats.Connect(os.Getenv("NATS_SERVER_URL"))
+func StartServer(natsUrl string) {
+	nc, err := nats.Connect(natsUrl)
 	if err != nil {
 		log.Fatal(err)
 	}

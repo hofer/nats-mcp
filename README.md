@@ -1,15 +1,35 @@
 # Nats.io MCP framework
 
-This is an example on jow nats.io microservices can be used in combination
-with MCP. Different tools can be exposed as Nats.io microservices and then
-usable via a MCP server.
+This is a cli tool to expose MCP tools via nats.io microservices. It can be used either standalone (exposing existing MCP Servers via Nats) or as library in Go to expose functions as tools.
 
-## Useful links:
+> [!WARNING]
+> This tool is very much work in progress. Expect almost daily bracking changes...
+
+
+## Usage
+
+Exposing an existing MCP Server via Nats.io:
+```
+nats-mcp tool --url "nats://localhost:4222" --command="./whatever -flag foo"
+```
+
+To check what MCP tools are exposed via Nats use the followung command:
+```
+nats-mcp client --url "nats://localhost:4222"
+```
+
+To then actually use the tool with your local agent, add the following command to your config:
+```
+nats-mcp server --url "nats://localhost:4222"
+```
+
+
+## Useful links / Inspiration:
 
 ### MCP Spec:
 - https://modelcontextprotocol.io/docs/concepts/tools
 
-### MCP SDKs
+### MCP SDKs:
 - https://github.com/metoro-io/mcp-golang or https://mcpgolang.com/introduction
 - https://github.com/mark3labs/mcp-go
 - https://github.com/mark3labs/mcphost
