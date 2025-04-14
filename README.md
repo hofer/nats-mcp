@@ -1,26 +1,25 @@
-# Nats.io MCP framework
+# NATS MCP toolbox
 
-This is a cli tool to expose MCP tools via nats.io microservices. It can be used either standalone (exposing existing MCP Servers via Nats) or as library in Go to expose functions as tools.
+This is a collection of cli tools to expose MCP tools via NATS microservices. It can be used either standalone (exposing existing MCP Servers via Nats) or as library in Go to expose functions as tools.
 
 > [!WARNING]
 > This tool is very much work in progress. Expect almost daily bracking changes...
-
 
 ## Usage
 
 Exposing an existing MCP Server via Nats.io:
 ```
-nats-mcp tool --url "nats://localhost:4222" --command="./whatever -flag foo"
+./nats-mcp tool --url "nats://localhost:4222" --command="./whatever -flag foo"
 ```
 
 To check what MCP tools are exposed via Nats use the followung command:
 ```
-nats-mcp client --url "nats://localhost:4222"
+./nats-mcp client --url "nats://localhost:4222"
 ```
 
 To then actually use the tool with your local agent, add the following command to your config:
 ```
-nats-mcp server --url "nats://localhost:4222"
+./nats-mcp server --url "nats://localhost:4222"
 ```
 
 

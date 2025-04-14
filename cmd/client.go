@@ -1,7 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -43,5 +39,5 @@ func init() {
 	// is called directly, e.g.:
 	// clientCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	clientCmd.Flags().String("command", "", "A search term for a dad joke.")
-	serverCmd.MarkFlagRequired("command")
+	clientCmd.MarkFlagRequired("command")
 }
