@@ -8,7 +8,7 @@ import (
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "Start an MCP Server exposing all NATS tools",
+	Short: "Start an MCP Server exposing all NATS MCP tools",
 	Long: `This command will start a MCP Server and make available all tools which are defined
 as NATS microservices as tools.
 

@@ -4,19 +4,23 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/hofer/nats-mcp/internal/tool"
 )
 
 var toolCmd = &cobra.Command{
 	Use:   "tool",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Expose tools from a MCP Server via NATS",
+	Long: `This command can be used to expose local MCP tools (a MCP server started locally) via NATS. With
+just a few simple commands many other MCP servers can be made accessible via NATS.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("tool called")
+		fmt.Println(args)
+
+		natsUrl, _ := cmd.Flags().GetString("url")
+		command, _ := cmd.Flags().GetString("command")
+		tool.StartTool(natsUrl, command, args)
 	},
 }
 

@@ -3,7 +3,7 @@
 This is a collection of cli tools to expose MCP tools via NATS microservices. It can be used either standalone (exposing existing MCP Servers via Nats) or as library in Go to expose functions as tools.
 
 > [!WARNING]
-> This tool is very much work in progress. Expect almost daily bracking changes...
+> This tool is very much work in progress. Expect almost daily breacking changes...
 
 ## Usage
 
@@ -24,6 +24,8 @@ To then actually use the tool with your local agent, add the following command t
 
 
 ## Useful links / Inspiration:
+
+The following collection of links have been an inspiration for this project.
 
 ### MCP Spec:
 - https://modelcontextprotocol.io/docs/concepts/tools

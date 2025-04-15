@@ -1,4 +1,4 @@
-package server
+package natsmcp
 
 import (
 	"bytes"
