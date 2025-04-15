@@ -12,7 +12,7 @@ Exposing an existing MCP Server via Nats.io:
 ./nats-mcp tool --url "nats://localhost:4222" --command="./whatever -flag foo"
 ```
 
-To check what MCP tools are exposed via Nats use the followung command:
+To check what MCP tools are exposed via Nats use the following command:
 ```
 ./nats-mcp client --url "nats://localhost:4222"
 ```

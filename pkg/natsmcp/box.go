@@ -1,4 +1,4 @@
-package natstool
+package natsmcp
 
 import (
 	"github.com/mark3labs/mcp-go/mcp"

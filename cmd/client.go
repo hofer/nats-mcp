@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// clientCmd represents the client command
 var clientCmd = &cobra.Command{
 	Use:   "client",
 	Short: "A brief description of your command",
@@ -26,8 +25,6 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(clientCmd)
-
-
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

@@ -1,4 +1,4 @@
-module nats-mcp/mcp-tool
+module nats-mcp/mcp-example
 
 go 1.24.1
 

@@ -2,30 +2,24 @@ package cmd
 
 import (
 	"fmt"
-	//"os"
-
 	"github.com/spf13/cobra"
 	"github.com/hofer/nats-mcp/internal/server"
 )
 
-// serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Start an MCP Server exposing all NATS tools",
+	Long: `This command will start a MCP Server and make available all tools which are defined
+as NATS microservices as tools.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The server is accessible via stdio only. 
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("server called")
-
 
 		natsUrl, _ := cmd.Flags().GetString("url")
 		//natsUrl := os.Getenv("NATS_SERVER_URL")
 		server.StartServer(natsUrl)
-
 	},
 }
 

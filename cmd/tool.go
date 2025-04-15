@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// toolCmd represents the tool command
 var toolCmd = &cobra.Command{
 	Use:   "tool",
 	Short: "A brief description of your command",

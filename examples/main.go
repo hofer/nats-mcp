@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"runtime"
 	"os"
-	"github.com/hofer/nats-mcp/pkg/natstool"
+	"github.com/hofer/nats-mcp/pkg/natsmcp"
 )
 
 func main() {
@@ -48,7 +48,7 @@ func (n *McpEchoService) Start() {
 	root := srv.AddGroup("echo")
 
 	// Create tools and corresponding Handlers:
-	t1 := natstool.NatsMcpTool{
+	t1 := natsmcp.NatsMcpTool{
 		Tool: mcp.NewTool("hello_echo",
 			mcp.WithDescription("Say hello to someone"),
 			mcp.WithString("name",
@@ -66,7 +66,7 @@ func (n *McpEchoService) Start() {
 	}
 
 	// Add tools to toolbox
-	tb := natstool.NewNatsMcpToolBox(t1)
+	tb := natsmcp.NewNatsMcpToolBox(t1)
 
 	// Mcp Echo Endpoint
 	err = root.AddEndpoint(
