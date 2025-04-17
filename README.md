@@ -35,7 +35,7 @@ The following collection of links have been an inspiration for this project.
 - https://github.com/mark3labs/mcp-go
 - https://github.com/mark3labs/mcphost
 
-### Nats:
-- Nats Service Discovery (Cli Code): https://github.com/nats-io/natscli/blob/main/cli/service_command.go
+### NATS:
+- Nats Service Discovery (code example): https://github.com/nats-io/natscli/blob/main/cli/service_command.go
 - Nats ADR: https://github.com/nats-io/nats-architecture-and-design
 - Nats Micro: https://github.com/nats-io/nats.go/blob/main/micro/README.md
