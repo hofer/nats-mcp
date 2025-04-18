@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"github.com/hofer/nats-mcp/internal/tool"
+	"github.com/spf13/cobra"
 )
 
 var toolCmd = &cobra.Command{
@@ -38,6 +38,6 @@ func init() {
 	// toolCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	toolCmd.Flags().String("url", "", "URL to the Nats.io server")
 	toolCmd.MarkFlagRequired("url")
-	toolCmd.Flags().String("command", "", "Help message for toggle")
+	toolCmd.Flags().String("command", "", "Command to start the local MCP Server")
 	toolCmd.MarkFlagRequired("command")
 }

@@ -1,9 +1,10 @@
 # 🧰 NATS MCP toolbox
 
-This is a collection of cli tools to expose MCP tools via NATS microservices. It can be used either standalone (exposing existing MCP Servers via Nats) or as library in Go to expose functions as tools.
+This is a collection of cli tools to expose MCP tools via NATS microservices. It can be used either standalone (exposing
+existing MCP Servers via NATS) or as library in Go to expose functions as tools.
 
 > [!WARNING]
-> This tool is very much work in progress. Expect almost daily breacking changes...
+> This tool is very much work in progress. Expect almost daily breaking changes...
 
 ## Usage
 
