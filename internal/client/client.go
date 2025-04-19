@@ -23,7 +23,7 @@ func ListTools(natsUrl string) error {
 
 	// Add implementation to get tools:
 	for _, t := range tools {
-		log.Info("%s: %s", t.Name, t.Description)
+		log.Infof("%s: %s", t.Name, t.Description)
 	}
 
 	return nil
