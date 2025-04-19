@@ -1,47 +1,30 @@
 package client
 
 import (
-	"context"
-	"github.com/mark3labs/mcp-go/client"
-	"github.com/mark3labs/mcp-go/mcp"
-	"time"
+	"github.com/hofer/nats-mcp/pkg/natsmcp"
+	"github.com/mark3labs/mcp-go/server"
+	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
 
-func StartClient(command string) {
-	mcpClient, err := createClient(command)
+func ListTools(natsUrl string) error {
+	nc, err := nats.Connect(natsUrl)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	ctx := context.Background()
-	tools, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, t := range tools.Tools {
-		log.Infof("Tool: %s, Description: %s", t.Name, t.Description)
-	}
-}
+	// Create MCP server
+	s := server.NewMCPServer(
+		"Demo 🚀",
+		"1.0.0",
+	)
 
-func createClient(command string) (*client.StdioMCPClient, error) {
-	client, err := client.NewStdioMCPClient(command, []string{})
-	if err != nil {
-		return nil, err
+	tools := natsmcp.RequestTools(nc, s)
+
+	// Add implementation to get tools:
+	for _, t := range tools {
+		log.Info("%s: %s", t.Name, t.Description)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	log.Info("Initializing server...")
-	initRequest := mcp.InitializeRequest{}
-	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name:    "natsmicromcphost",
-		Version: "0.0.1",
-	}
-	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
-
-	_, err = client.Initialize(ctx, initRequest)
-	return client, err
+	return nil
 }

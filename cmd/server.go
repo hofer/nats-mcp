@@ -1,10 +1,13 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/hofer/nats-mcp/internal/server"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"os"
 )
+
+var natsUrl string
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
@@ -15,26 +18,16 @@ as NATS microservices as tools.
 The server is accessible via stdio only. 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("server called")
-
-		natsUrl, _ := cmd.Flags().GetString("url")
-		//natsUrl := os.Getenv("NATS_SERVER_URL")
-		server.StartServer(natsUrl)
+		log.Infof("Connecting to the Nats.io Server: %s", natsUrl)
+		err := server.StartServer(natsUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	serverCmd.Flags().String("url", "", "URL to the Nats.io server")
+	serverCmd.Flags().StringVarP(&natsUrl, "url", "u", os.Getenv("NATS_URL"), "URL to the Nats.io server")
 	serverCmd.MarkFlagRequired("url")
 }

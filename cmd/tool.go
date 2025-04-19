@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/hofer/nats-mcp/internal/tool"
 	"github.com/spf13/cobra"
+	"os"
 )
+
+var commandStr string
 
 var toolCmd = &cobra.Command{
 	Use:   "tool",
@@ -15,29 +16,16 @@ just a few simple commands many other MCP servers can be made accessible via NAT
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("tool called")
-		fmt.Println(args)
-
-		natsUrl, _ := cmd.Flags().GetString("url")
-		command, _ := cmd.Flags().GetString("command")
-		tool.StartTool(natsUrl, command, args)
+		tool.StartTool(natsUrl, commandStr, args)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(toolCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// toolCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// toolCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	toolCmd.Flags().String("url", "", "URL to the Nats.io server")
-	toolCmd.MarkFlagRequired("url")
-	toolCmd.Flags().String("command", "", "Command to start the local MCP Server")
+	toolCmd.Flags().StringVarP(&natsUrl, "url", "u", os.Getenv("NATS_URL"), "URL to the Nats.io server")
+	if os.Getenv("NATS_URL") == "" {
+		toolCmd.MarkFlagRequired("url")
+	}
+	toolCmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command to start the local MCP Server")
 	toolCmd.MarkFlagRequired("command")
 }

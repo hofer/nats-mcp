@@ -1,13 +1,13 @@
 package natsmcp
 
 import (
-    "context"
-    "encoding/json"
-    "github.com/mark3labs/mcp-go/mcp"
+	"context"
+	"encoding/json"
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/micro"
-	"github.com/mark3labs/mcp-go/server"
-    "time"
+	"time"
 )
 
 func NewNatsToolEndpoint(nc *nats.Conn, subject string) *NatsToolEndpoint {
@@ -36,8 +36,7 @@ func (n *NatsToolEndpoint) NatsToolHandler(ctx context.Context, request mcp.Call
 	return &result, err
 }
 
-
-func RequestTools(nc *nats.Conn, s *server.MCPServer) {
+func RequestTools(nc *nats.Conn, s *server.MCPServer) []mcp.Tool {
 	tools := []mcp.Tool{}
 
 	doReqAsync(nil, "$SRV.INFO", 0, nc, func(r []byte) {
@@ -56,4 +55,5 @@ func RequestTools(nc *nats.Conn, s *server.MCPServer) {
 			tools = append(tools, tool...)
 		}
 	})
+	return tools
 }

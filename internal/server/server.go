@@ -1,18 +1,15 @@
 package server
 
 import (
-    "fmt"
 	"github.com/hofer/nats-mcp/pkg/natsmcp"
-    "github.com/mark3labs/mcp-go/server"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/nats-io/nats.go"
-
-    log "github.com/sirupsen/logrus"
 )
 
-func StartServer(natsUrl string) {
+func StartServer(natsUrl string) error {
 	nc, err := nats.Connect(natsUrl)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Create MCP server
@@ -24,7 +21,6 @@ func StartServer(natsUrl string) {
 	natsmcp.RequestTools(nc, s)
 
 	// Start the stdio server
-	if err := server.ServeStdio(s); err != nil {
-		fmt.Printf("Server error: %v\n", err)
-	}
+	err = server.ServeStdio(s)
+	return err
 }
