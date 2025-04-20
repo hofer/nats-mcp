@@ -6,12 +6,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func StartServer(natsUrl string) error {
-	nc, err := nats.Connect(natsUrl)
-	if err != nil {
-		return err
-	}
-
+func StartServer(nc *nats.Conn) error {
 	// Create MCP server
 	s := server.NewMCPServer(
 		"Demo 🚀",
@@ -21,6 +16,5 @@ func StartServer(natsUrl string) error {
 	natsmcp.RequestTools(nc, s)
 
 	// Start the stdio server
-	err = server.ServeStdio(s)
-	return err
+	return server.ServeStdio(s)
 }

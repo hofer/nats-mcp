@@ -1,9 +1,9 @@
 package natsmcp
 
 import (
-	"github.com/mark3labs/mcp-go/mcp"
 	"context"
 	"encoding/json"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go/micro"
 )
 
@@ -12,14 +12,14 @@ type NatsMcpTool struct {
 	Handler func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error)
 }
 
-type NatsMcpToolBox struct {
-	natsTools []NatsMcpTool
-}
-
 func NewNatsMcpToolBox(natsTools ...NatsMcpTool) *NatsMcpToolBox {
 	return &NatsMcpToolBox{
 		natsTools: natsTools,
 	}
+}
+
+type NatsMcpToolBox struct {
+	natsTools []NatsMcpTool
 }
 
 func (t *NatsMcpToolBox) CreateMcpToolMetadata() string {

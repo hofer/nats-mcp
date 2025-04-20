@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"github.com/hofer/nats-mcp/internal/tool"
+	"github.com/nats-io/nats.go"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
+	"runtime"
 )
 
 var commandStr string
@@ -16,7 +19,12 @@ just a few simple commands many other MCP servers can be made accessible via NAT
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		tool.StartTool(natsUrl, commandStr, args)
+		nc, err := nats.Connect(natsUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
+		tool.StartTool(nc, commandStr, args)
+		runtime.Goexit()
 	},
 }
 

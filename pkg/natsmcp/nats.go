@@ -7,11 +7,36 @@ import (
 	"fmt"
 	"github.com/klauspost/compress/s2"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/micro"
 	"io"
 	"strings"
 	"sync"
 	"time"
 )
+
+func AddToNewService(nc *nats.Conn, toolBox *NatsMcpToolBox) (micro.Service, error) {
+	srv, err := micro.AddService(nc, micro.Config{
+		Name:        "McpEchoService",
+		Version:     "0.0.2",
+		Description: "Simple MCP echo service to test MCP via Nats.",
+	})
+	if err != nil {
+		return srv, err
+	}
+	//defer srv.Stop()
+
+	root := srv.AddGroup("mcp")
+
+	// Mcp Echo Endpoint
+	err = root.AddEndpoint(
+		toolBox.GetSubject(),
+		toolBox.GetHandlerFunc(),
+		micro.WithEndpointMetadata(map[string]string{
+			"mcp_tool": toolBox.CreateMcpToolMetadata(),
+		}))
+
+	return srv, nil
+}
 
 // doReqAsync serializes and sends a request to the given subject and handles multiple responses.
 // This function uses the value from `Timeout` CLI flag as upper limit for responses gathering.

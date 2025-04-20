@@ -7,12 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func ListTools(natsUrl string) error {
-	nc, err := nats.Connect(natsUrl)
-	if err != nil {
-		return err
-	}
-
+func ListTools(nc *nats.Conn) error {
 	// Create MCP server
 	s := server.NewMCPServer(
 		"Demo 🚀",

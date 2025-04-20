@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/hofer/nats-mcp/internal/server"
+	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -19,7 +20,11 @@ The server is accessible via stdio only.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Infof("Connecting to the Nats.io Server: %s", natsUrl)
-		err := server.StartServer(natsUrl)
+		nc, err := nats.Connect(natsUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = server.StartServer(nc)
 		if err != nil {
 			log.Fatal(err)
 		}

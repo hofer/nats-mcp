@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/hofer/nats-mcp/pkg/natsmcp"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nats.go/micro"
 	log "github.com/sirupsen/logrus"
-	"runtime"
 	"os"
-	"github.com/hofer/nats-mcp/pkg/natsmcp"
+	"runtime"
 )
 
 func main() {
@@ -23,7 +22,7 @@ type McpEchoService struct {
 }
 
 func NewMcpEchoService() *McpEchoService {
-	nc, err := nats.Connect(os.Getenv("NATS_SERVER_URL"))
+	nc, err := nats.Connect(os.Getenv("NATS_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,23 +31,11 @@ func NewMcpEchoService() *McpEchoService {
 	}
 }
 
-func (n *McpEchoService) Start() {
+func (n *McpEchoService) Start() error {
 	log.Infof("Starting McpEchoService...")
 
-	srv, err := micro.AddService(n.nc, micro.Config{
-		Name:        "McpEchoService",
-		Version:     "0.0.2",
-		Description: "Simple MCP echo service to test MCP via Nats.",
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	//defer srv.Stop()
-
-	root := srv.AddGroup("echo")
-
 	// Create tools and corresponding Handlers:
-	t1 := natsmcp.NatsMcpTool{
+	tools := natsmcp.NatsMcpTool{
 		Tool: mcp.NewTool("hello_echo",
 			mcp.WithDescription("Say hello to someone"),
 			mcp.WithString("name",
@@ -65,19 +52,15 @@ func (n *McpEchoService) Start() {
 		},
 	}
 
-	// Add tools to toolbox
-	tb := natsmcp.NewNatsMcpToolBox(t1)
+	// Add all tools to a toolbox
+	toolBox := natsmcp.NewNatsMcpToolBox(tools)
 
-	// Mcp Echo Endpoint
-	err = root.AddEndpoint(
-		tb.GetSubject(),
-		tb.GetHandlerFunc(),
-		micro.WithEndpointMetadata(map[string]string{
-			"mcp_tool": tb.CreateMcpToolMetadata(),
-		}))
+	// Expose all tools in the toolbox as a Nats microservice
+	_, err := natsmcp.AddToNewService(n.nc, toolBox)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	n.nc.ConnectedAddr()
+	log.Infof("Service connected at %s", n.nc.ConnectedAddr())
+	return nil
 }

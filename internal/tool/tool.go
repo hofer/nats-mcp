@@ -2,29 +2,49 @@ package tool
 
 import (
 	"context"
+	"github.com/hofer/nats-mcp/pkg/natsmcp"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
-	"time"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/micro"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
-func StartTool(natsUrl string, command string, args []string) {
-	mcpClient, err := createToolClient(command)
+func StartTool(nc *nats.Conn, command string, args []string) (micro.Service, error) {
+	// Get tool information from the given command (connecting to the tool first):
+	mcpClient, err := createToolClient(command, args)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
+	// Get all tools:
 	ctx := context.Background()
 	tools, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
+
+	// Convert the tools found to NatsMcpTools
+	var natsMcpTools []natsmcp.NatsMcpTool
 	for _, t := range tools.Tools {
-		log.Infof("Tool: %s, Description: %s", t.Name, t.Description)
+		log.Debugf("Tool: %s, Description: %s", t.Name, t.Description)
+		mcpTool := natsmcp.NatsMcpTool{
+			Tool: t,
+			Handler: func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+				return nil, nil
+			},
+		}
+		natsMcpTools = append(natsMcpTools, mcpTool)
 	}
+
+	// Expose the tools found as a NATS microservice:
+	toolBox := natsmcp.NewNatsMcpToolBox(natsMcpTools...)
+	srv, err := natsmcp.AddToNewService(nc, toolBox)
+	return srv, err
 }
 
-func createToolClient(command string) (*client.StdioMCPClient, error) {
+func createToolClient(command string, args []string) (*client.StdioMCPClient, error) {
 	client, err := client.NewStdioMCPClient(command, []string{})
 	if err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/hofer/nats-mcp/internal/client"
+	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -13,7 +14,14 @@ var listCmd = &cobra.Command{
 	Long:  `Searches for all tools which are exposed via NATS and prints a list.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Listing all tools...")
-		client.ListTools(natsUrl)
+		nc, err := nats.Connect(natsUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = client.ListTools(nc)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
