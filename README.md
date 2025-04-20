@@ -4,17 +4,18 @@ This is a collection of cli tools to expose MCP tools via NATS microservices. It
 existing MCP Servers via NATS) or as library in Go to expose functions as tools.
 
 > [!WARNING]
+> 🚨 🚧 This tool is under active development 🚧 🚨
 > This tool is very much work in progress. While the tools should all work, expect almost
-> daily breaking changes. Please also keep in mind that we currently support stdio only.
+> daily breaking changes. Please also keep in mind that we currently support stdio servers only.
 
 ## Usage
 
-Exposing an existing MCP Server via Nats.io:
+Exposing an existing MCP Server via NATS:
 ```
 ./nats-mcp tool --url "nats://localhost:4222" --command="./whatever-mcp-erver" -arg foo
 ```
 
-To check what MCP tools are exposed via Nats use the following command:
+To check what MCP tools are exposed via NATS use the following command:
 ```
 ./nats-mcp client list --url "nats://localhost:4222"
 ```

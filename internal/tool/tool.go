@@ -30,10 +30,8 @@ func StartTool(nc *nats.Conn, command string, env []string, args ...string) (mic
 	for _, t := range tools.Tools {
 		log.Debugf("Tool: %s, Description: %s", t.Name, t.Description)
 		mcpTool := natsmcp.NatsMcpTool{
-			Tool: t,
-			Handler: func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-				return nil, nil
-			},
+			Tool:    t,
+			Handler: mcpClient.CallTool,
 		}
 		natsMcpTools = append(natsMcpTools, mcpTool)
 	}
