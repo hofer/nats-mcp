@@ -14,9 +14,9 @@ import (
 	"time"
 )
 
-func AddToNewService(nc *nats.Conn, toolBox *NatsMcpToolBox) (micro.Service, error) {
+func AddToNewService(nc *nats.Conn, toolBox *NatsMcpToolBox, serviceName string) (micro.Service, error) {
 	srv, err := micro.AddService(nc, micro.Config{
-		Name:        "McpEchoService",
+		Name:        fmt.Sprintf("%sMCP", serviceName),
 		Version:     "0.0.2",
 		Description: "Simple MCP echo service to test MCP via Nats.",
 	})
@@ -39,7 +39,6 @@ func AddToNewService(nc *nats.Conn, toolBox *NatsMcpToolBox) (micro.Service, err
 }
 
 // doReqAsync serializes and sends a request to the given subject and handles multiple responses.
-// This function uses the value from `Timeout` CLI flag as upper limit for responses gathering.
 // The value of the `waitFor` may shorten the interval during which responses are gathered:
 //
 //	waitFor < 0  : listen for responses for the full timeout interval
@@ -63,10 +62,6 @@ func doReqAsync(req any, subj string, waitFor int, nc *nats.Conn, cb func([]byte
 			}
 		}
 	}
-
-	//if opts().Trace {
-	//	log.Printf(">>> %s: %s\n", subj, string(jreq))
-	//}
 
 	var (
 		mu       sync.Mutex
@@ -108,18 +103,6 @@ func doReqAsync(req any, subj string, waitFor int, nc *nats.Conn, cb func([]byte
 			}
 			data = ud
 		}
-
-		//if opts().Trace {
-		//	if compressed {
-		//		log.Printf("<<< (%dB -> %dB) %s", len(m.Data), len(data), string(data))
-		//	} else {
-		//		log.Printf("<<< (%dB) %s", len(data), string(data))
-		//	}
-		//
-		//	if m.Header != nil {
-		//		log.Printf("<<< Header: %+v", m.Header)
-		//	}
-		//}
 
 		// If adaptive timeout is active, set deadline for next response
 		if finisher != nil {
@@ -170,10 +153,6 @@ func doReqAsync(req any, subj string, waitFor int, nc *nats.Conn, cb func([]byte
 		return err
 	case <-ctx.Done():
 	}
-
-	//if opts().Trace {
-	//	log.Printf("=== Received %d responses", ctr)
-	//}
 
 	return nil
 }

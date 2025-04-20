@@ -38,7 +38,7 @@ func StartTool(nc *nats.Conn, command string, env []string, args ...string) (mic
 
 	// Expose the tools found as a NATS microservice:
 	toolBox := natsmcp.NewNatsMcpToolBox(natsMcpTools...)
-	srv, err := natsmcp.AddToNewService(nc, toolBox)
+	srv, err := natsmcp.AddToNewService(nc, toolBox, "NatsService")
 	return srv, err
 }
 
