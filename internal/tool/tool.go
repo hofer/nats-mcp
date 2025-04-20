@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-func StartTool(nc *nats.Conn, command string, args []string) (micro.Service, error) {
+func StartTool(nc *nats.Conn, command string, env []string, args ...string) (micro.Service, error) {
 	// Get tool information from the given command (connecting to the tool first):
-	mcpClient, err := createToolClient(command, args)
+	mcpClient, err := createToolClient(command, env, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +44,8 @@ func StartTool(nc *nats.Conn, command string, args []string) (micro.Service, err
 	return srv, err
 }
 
-func createToolClient(command string, args []string) (*client.StdioMCPClient, error) {
-	client, err := client.NewStdioMCPClient(command, []string{})
+func createToolClient(command string, env []string, args ...string) (*client.StdioMCPClient, error) {
+	stdioClient, err := client.NewStdioMCPClient(command, env, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -62,6 +62,6 @@ func createToolClient(command string, args []string) (*client.StdioMCPClient, er
 	}
 	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
 
-	_, err = client.Initialize(ctx, initRequest)
-	return client, err
+	_, err = stdioClient.Initialize(ctx, initRequest)
+	return stdioClient, err
 }

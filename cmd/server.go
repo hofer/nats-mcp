@@ -24,7 +24,7 @@ The server is accessible via stdio only.
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = server.StartServer(nc)
+		err = server.StartServer(nc, "Demo 🚀", "1.0.0")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -34,5 +34,7 @@ The server is accessible via stdio only.
 func init() {
 	rootCmd.AddCommand(serverCmd)
 	serverCmd.Flags().StringVarP(&natsUrl, "url", "u", os.Getenv("NATS_URL"), "URL to the Nats.io server")
-	serverCmd.MarkFlagRequired("url")
+	if os.Getenv("NATS_URL") == "" {
+		serverCmd.MarkFlagRequired("url")
+	}
 }

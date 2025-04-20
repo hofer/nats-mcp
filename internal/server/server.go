@@ -6,13 +6,11 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func StartServer(nc *nats.Conn) error {
+func StartServer(nc *nats.Conn, serverName string, serverVersion string) error {
 	// Create MCP server
-	s := server.NewMCPServer(
-		"Demo 🚀",
-		"1.0.0",
-	)
+	s := server.NewMCPServer(serverName, serverVersion)
 
+	// Lookup for all tools exposed via NATS:
 	natsmcp.RequestTools(nc, s)
 
 	// Start the stdio server

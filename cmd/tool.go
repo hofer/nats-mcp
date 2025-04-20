@@ -10,6 +10,7 @@ import (
 )
 
 var commandStr string
+var environment []string
 
 var toolCmd = &cobra.Command{
 	Use:   "tool",
@@ -23,7 +24,7 @@ just a few simple commands many other MCP servers can be made accessible via NAT
 		if err != nil {
 			log.Fatal(err)
 		}
-		tool.StartTool(nc, commandStr, args)
+		tool.StartTool(nc, commandStr, environment, args...)
 		runtime.Goexit()
 	},
 }
@@ -36,4 +37,12 @@ func init() {
 	}
 	toolCmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command to start the local MCP Server")
 	toolCmd.MarkFlagRequired("command")
+
+	toolCmd.Flags().StringArrayVarP(
+		&environment,
+		"env",
+		"e",
+		[]string{},
+		"Define environment variables which should be added when running the command.")
+
 }
