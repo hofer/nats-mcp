@@ -49,14 +49,17 @@ func (t *NatsMcpToolBox) mcpToolHandler(request micro.Request) {
 			log.Infof("🔧 Calling tool: %s ...", tt.Tool.Name)
 			toolResult, tollCallErr := tt.Handler(context.Background(), toolRequest)
 			if tollCallErr != nil {
+				log.Error(tollCallErr)
 				request.Respond([]byte(fmt.Sprintf("Calling tool %s failed", tt.Tool.Name)))
 				return
 			} else {
 				toolResultJson, err := json.Marshal(toolResult)
 				if err != nil {
+					log.Error(err)
 					request.Respond([]byte("Error"))
 					return
 				}
+				log.Debug(string(toolResultJson))
 				request.Respond(toolResultJson)
 				return
 			}

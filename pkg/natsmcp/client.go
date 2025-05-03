@@ -15,8 +15,8 @@ func NewStdioMCPClient(ctx context.Context, command string, env []string, args .
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
 	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name: "nats-mcp",
-		//Version: "0.0.1",
+		Name:    "nats-mcp",
+		Version: "0.0.1",
 	}
 	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
 
