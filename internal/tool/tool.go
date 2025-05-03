@@ -3,7 +3,6 @@ package tool
 import (
 	"context"
 	"github.com/hofer/nats-mcp/pkg/natsmcp"
-	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/micro"
@@ -12,15 +11,18 @@ import (
 )
 
 func StartTool(nc *nats.Conn, command string, env []string, args ...string) (micro.Service, error) {
+	ctxClient, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	// Get tool information from the given command (connecting to the tool first):
-	mcpClient, err := createToolClient(command, env, args...)
+	mcpClient, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get all tools:
-	ctx := context.Background()
-	tools, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
+	ctxList := context.Background()
+	tools, err := mcpClient.ListTools(ctxList, mcp.ListToolsRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -40,26 +42,4 @@ func StartTool(nc *nats.Conn, command string, env []string, args ...string) (mic
 	toolBox := natsmcp.NewNatsMcpToolBox(natsMcpTools...)
 	srv, err := natsmcp.AddToNewService(nc, toolBox, "NatsService")
 	return srv, err
-}
-
-func createToolClient(command string, env []string, args ...string) (*client.StdioMCPClient, error) {
-	stdioClient, err := client.NewStdioMCPClient(command, env, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	log.Info("Initializing server...")
-	initRequest := mcp.InitializeRequest{}
-	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name:    "natsmicromcphost",
-		Version: "0.0.1",
-	}
-	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
-
-	_, err = stdioClient.Initialize(ctx, initRequest)
-	return stdioClient, err
 }
