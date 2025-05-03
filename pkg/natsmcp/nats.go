@@ -18,7 +18,7 @@ func AddToNewService(nc *nats.Conn, toolBox *NatsMcpToolBox, serviceName string)
 	srv, err := micro.AddService(nc, micro.Config{
 		Name:        fmt.Sprintf("%sMCP", serviceName),
 		Version:     "0.0.2",
-		Description: "Simple MCP echo service to test MCP via Nats.",
+		Description: "MCP service exposing MCP tools via Nats.",
 	})
 	if err != nil {
 		return srv, err

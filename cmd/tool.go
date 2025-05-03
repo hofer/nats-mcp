@@ -14,9 +14,9 @@ var environment []string
 
 var toolCmd = &cobra.Command{
 	Use:   "tool",
-	Short: "Expose tools from a MCP Server via NATS",
+	Short: "Expose tools from a local MCP Server (Stdio) via NATS",
 	Long: `This command can be used to expose local MCP tools (a MCP server started locally) via NATS. With
-just a few simple commands many other MCP servers can be made accessible via NATS.
+just a few simple commands many different MCP servers can be made accessible via NATS.
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -24,7 +24,12 @@ just a few simple commands many other MCP servers can be made accessible via NAT
 		if err != nil {
 			log.Fatal(err)
 		}
-		tool.StartTool(nc, commandStr, environment, args...)
+		_, err = tool.StartTool(nc, commandStr, environment, args...)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Info("Waiting for incoming tool calls...")
 		runtime.Goexit()
 	},
 }

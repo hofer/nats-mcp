@@ -3,8 +3,10 @@ package natsmcp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go/micro"
+	log "github.com/sirupsen/logrus"
 )
 
 type NatsMcpTool struct {
@@ -34,14 +36,20 @@ func (t *NatsMcpToolBox) CreateMcpToolMetadata() string {
 func (t *NatsMcpToolBox) mcpToolHandler(request micro.Request) {
 	// Get the tool request:
 	var toolRequest mcp.CallToolRequest
-	json.Unmarshal(request.Data(), &toolRequest)
+	err := json.Unmarshal(request.Data(), &toolRequest)
+	if err != nil {
+		log.Error(err)
+		request.Respond([]byte("Error on tool call (unmarshalling request)"))
+		return
+	}
 
+	// Find and execute the corresponding tool:
 	for _, tt := range t.natsTools {
 		if tt.Tool.Name == toolRequest.Params.Name {
-			toolResult, err := tt.Handler(context.Background(), toolRequest)
-			if err != nil {
-				// TODO: Implement error
-				request.Respond([]byte("hello"))
+			log.Infof("🔧 Calling tool: %s ...", tt.Tool.Name)
+			toolResult, tollCallErr := tt.Handler(context.Background(), toolRequest)
+			if tollCallErr != nil {
+				request.Respond([]byte(fmt.Sprintf("Calling tool %s failed", tt.Tool.Name)))
 				return
 			} else {
 				toolResultJson, err := json.Marshal(toolResult)
@@ -55,7 +63,8 @@ func (t *NatsMcpToolBox) mcpToolHandler(request micro.Request) {
 		}
 	}
 
-	request.Respond([]byte("Error"))
+	// We should never reach this point (if the tool name in the request is correct)...
+	request.Respond([]byte("Error - maybe the tool could not be found?"))
 }
 
 func (t *NatsMcpToolBox) GetSubject() string {
