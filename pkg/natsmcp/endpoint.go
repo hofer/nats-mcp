@@ -3,6 +3,7 @@ package natsmcp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/nats-io/nats.go"
@@ -27,13 +28,19 @@ func (n *NatsToolEndpoint) NatsToolHandler(ctx context.Context, request mcp.Call
 	if err != nil {
 		return nil, err
 	}
+
 	msg, err := n.nc.Request(n.subject, data, 10*time.Second)
 	if err != nil {
 		return nil, err
 	}
-	var result mcp.CallToolResult
-	err = json.Unmarshal(msg.Data, &result)
-	return &result, err
+
+	rawMessage := (*json.RawMessage)(&msg.Data)
+	result, err := mcp.ParseCallToolResult(rawMessage)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing tool result: %v, data: %s", err, msg.Data)
+	}
+	
+	return result, err
 }
 
 func RequestTools(nc *nats.Conn, s *server.MCPServer) []mcp.Tool {
