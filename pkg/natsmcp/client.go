@@ -6,7 +6,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-func NewStdioMCPClient(ctx context.Context, command string, env []string, args ...string) (*client.StdioMCPClient, error) {
+func NewStdioMCPClient(ctx context.Context, command string, env []string, args ...string) (client.MCPClient, error) {
 	stdioClient, err := client.NewStdioMCPClient(command, env, args...)
 	if err != nil {
 		return nil, err
