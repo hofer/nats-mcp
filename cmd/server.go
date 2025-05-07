@@ -8,7 +8,11 @@ import (
 	"os"
 )
 
+var serverName string
+var serverVersion string
 var natsUrl string
+var transport string
+var ssePort string
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
@@ -24,7 +28,7 @@ The server is accessible via stdio only.
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = server.StartServer(nc, "Demo 🚀", "1.0.0")
+		err = server.StartServer(nc, serverName, serverVersion, transport, ssePort)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -33,8 +37,15 @@ The server is accessible via stdio only.
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
+
+	serverCmd.Flags().StringVarP(&serverName, "name", "n", "NatsMcp Server 🚀", "MCP server name")
+	serverCmd.Flags().StringVarP(&serverVersion, "version", "v", "1.0.0", "MCP server version")
+
 	serverCmd.Flags().StringVarP(&natsUrl, "url", "u", os.Getenv("NATS_URL"), "URL to the Nats.io server")
 	if os.Getenv("NATS_URL") == "" {
 		serverCmd.MarkFlagRequired("url")
 	}
+
+	serverCmd.Flags().StringVarP(&transport, "transport", "t", "stdio", "Transport can either be 'sse' or 'stdio'")
+	serverCmd.Flags().StringVarP(&ssePort, "port", "p", ":8080", "Port the SSE server should listen on")
 }

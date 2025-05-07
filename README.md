@@ -1,10 +1,12 @@
 # 🧰 NATS MCP toolbox
+![workflow](https://github.com/hofer/nats-mcp/actions/workflows/build.yml/badge.svg)
 
 This is a collection of cli tools to expose MCP tools via NATS microservices. It can be used either standalone (exposing
-existing MCP Servers via NATS) or as library in Go to expose functions as tools.
+local/existing MCP Servers via NATS) or as library in Go to expose functionality as tools.
 
 > [!WARNING]
 > 🚨 🚧 This tool is under active development 🚧 🚨
+>
 > This tool is very much work in progress. While the tools should all work, expect almost
 > daily breaking changes. Please also keep in mind that we currently support stdio servers only.
 
