@@ -6,7 +6,15 @@ import (
 	"fmt"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go/micro"
+	"bytes"
+	"github.com/klauspost/compress/s2"
+	"github.com/mark3labs/mcp-go/client/transport"
+	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
+	"io"
+	"strings"
+	"sync"
+	"time"
 )
 
 type NatsMcpTool struct {
@@ -77,3 +85,210 @@ func (t *NatsMcpToolBox) GetSubject() string {
 func (t *NatsMcpToolBox) GetHandlerFunc() micro.Handler {
 	return micro.HandlerFunc(t.mcpToolHandler)
 }
+
+
+func (t *NatsMcpToolBox) AddToolsAsNatsService(nc *nats.Conn, serviceName string) (micro.Service, error) {
+	srv, err := micro.AddService(nc, micro.Config{
+		Name:        fmt.Sprintf("%sMCP", serviceName),
+		Version:     "0.0.2",
+		Description: fmt.Sprintf("MCP service for %s exposing tools via NATS microservices.", serviceName),
+		})
+	if err != nil {
+		return srv, err
+	}
+	//defer srv.Stop()
+
+	// MCP Tool Endpoint
+	toolRoot := srv.AddGroup("mcp_tool")
+	err = toolRoot.AddEndpoint(
+		serviceName,
+		t.GetHandlerFunc(),
+		micro.WithEndpointMetadata(map[string]string{
+			"mcp_tool": t.CreateMcpToolMetadata(),
+			}))
+	return srv, err
+}
+
+func (t *NatsMcpToolBox) AddTransportNatsService(srv micro.Service, trans transport.Interface, serviceName string) error {
+	rawRoot := srv.AddGroup("mcp_raw")
+	err := rawRoot.AddEndpoint(
+		serviceName,
+		micro.HandlerFunc(func(request micro.Request) {
+			var toolRequest transport.JSONRPCRequest
+			err := json.Unmarshal(request.Data(), &toolRequest)
+			if err != nil {
+				log.Error(err)
+				msg := fmt.Sprintf("Error on mcp_raw request (unmarshalling request): %v", err)
+				errorResponse := mcp.NewJSONRPCError("", mcp.PARSE_ERROR, msg, "")
+				data, _ := json.Marshal(errorResponse)
+				request.Respond(data)
+				return
+			}
+
+			resp, err := trans.SendRequest(context.Background(), toolRequest)
+			if err != nil {
+				log.Error(err)
+				msg := fmt.Sprintf("Error on sending mcp_raw: %v", err)
+				errorResponse := mcp.NewJSONRPCError("", mcp.INTERNAL_ERROR, msg, "")
+				data, _ := json.Marshal(errorResponse)
+				request.Respond(data)
+				return
+			}
+
+			respData, err := json.Marshal(resp)
+			request.Respond(respData)
+		}))
+	if err != nil {
+		return err
+	}
+
+	notificationRoot := srv.AddGroup("mcp_notification")
+	err = notificationRoot.AddEndpoint(
+		serviceName,
+		micro.HandlerFunc(func(request micro.Request) {
+			var toolRequest mcp.JSONRPCNotification
+			err := json.Unmarshal(request.Data(), &toolRequest)
+			if err != nil {
+				log.Error(err)
+				msg := fmt.Sprintf("Error on mcp_notification request (unmarshalling request): %v", err)
+				errorResponse := mcp.NewJSONRPCError("", mcp.PARSE_ERROR, msg, "")
+				data, _ := json.Marshal(errorResponse)
+				request.Respond(data)
+				return
+			}
+
+			err = trans.SendNotification(context.Background(), toolRequest)
+			if err != nil {
+				log.Error(err)
+				msg := fmt.Sprintf("Error on sending mcp_notification: %v", err)
+				errorResponse := mcp.NewJSONRPCError("", mcp.INTERNAL_ERROR, msg, "")
+				data, _ := json.Marshal(errorResponse)
+				request.Respond(data)
+				return
+			}
+
+			request.Respond([]byte(""))
+		}))
+
+	return err
+}
+
+// doReqAsync serializes and sends a request to the given subject and handles multiple responses.
+// The value of the `waitFor` may shorten the interval during which responses are gathered:
+//
+//	waitFor < 0  : listen for responses for the full timeout interval
+//	waitFor == 0 : (adaptive timeout), after each response, wait a short amount of time for more, then stop
+//	waitFor > 0  : stops listening before the timeout if the given number of responses are received
+func doReqAsync(req any, subj string, waitFor int, nc *nats.Conn, cb func([]byte)) error {
+	ctx := context.Background()
+	timeout := 10 * time.Second
+
+	jreq := []byte("{}")
+	var err error
+
+	if req != nil {
+		switch val := req.(type) {
+		case string:
+			jreq = []byte(val)
+		default:
+			jreq, err = json.Marshal(req)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	var (
+		mu       sync.Mutex
+		ctr      = 0
+		finisher *time.Timer
+	)
+
+	// Set deadline, max amount of time this function waits for responses
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	// Activate "adaptive timeout". Finisher may trigger early termination
+	if waitFor == 0 {
+		// First response can take up to Timeout to arrive
+		finisher = time.NewTimer(timeout)
+		go func() {
+			select {
+			case <-finisher.C:
+				cancel()
+			case <-ctx.Done():
+				return
+			}
+		}()
+	}
+
+	errs := make(chan error)
+	sub, err := nc.Subscribe(nc.NewRespInbox(), func(m *nats.Msg) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		data := m.Data
+		//compressed := false
+		if m.Header.Get("Content-Encoding") == "snappy" {
+			//compressed = true
+			ud, err := io.ReadAll(s2.NewReader(bytes.NewBuffer(data)))
+			if err != nil {
+				errs <- err
+				return
+			}
+			data = ud
+		}
+
+		// If adaptive timeout is active, set deadline for next response
+		if finisher != nil {
+			// Stop listening and return if no further responses arrive within this interval
+			finisher.Reset(300 * time.Millisecond)
+		}
+
+		if m.Header.Get("Status") == "503" {
+			errs <- nats.ErrNoResponders
+			return
+		}
+
+		cb(data)
+		ctr++
+
+		// Stop listening if the requested number of responses have been received
+		if waitFor > 0 && ctr == waitFor {
+			cancel()
+		}
+	})
+	if err != nil {
+		return err
+	}
+	defer sub.Unsubscribe()
+
+	if waitFor > 0 {
+		sub.AutoUnsubscribe(waitFor)
+	}
+
+	msg := nats.NewMsg(subj)
+	msg.Data = jreq
+	if subj != "$SYS.REQ.SERVER.PING" && !strings.HasPrefix(subj, "$SYS.REQ.ACCOUNT") {
+		msg.Header.Set("Accept-Encoding", "snappy")
+	}
+	msg.Reply = sub.Subject
+
+	err = nc.PublishMsg(msg)
+	if err != nil {
+		return err
+	}
+
+	select {
+	case err = <-errs:
+		if err == nats.ErrNoResponders && strings.HasPrefix(subj, "$SYS") {
+			return fmt.Errorf("server request failed, ensure the account used has system privileges and appropriate permissions")
+		}
+
+		return err
+	case <-ctx.Done():
+	}
+
+	return nil
+}
+

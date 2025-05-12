@@ -3,13 +3,14 @@ package natsmcp
 import (
 	"context"
 	"github.com/mark3labs/mcp-go/client"
+	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-func NewStdioMCPClient(ctx context.Context, command string, env []string, args ...string) (client.MCPClient, error) {
+func NewStdioMCPClient(ctx context.Context, command string, env []string, args ...string) (client.MCPClient, transport.Interface, error) {
 	stdioClient, err := client.NewStdioMCPClient(command, env, args...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	initRequest := mcp.InitializeRequest{}
@@ -21,5 +22,5 @@ func NewStdioMCPClient(ctx context.Context, command string, env []string, args .
 	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
 
 	_, err = stdioClient.Initialize(ctx, initRequest)
-	return stdioClient, err
+	return stdioClient, stdioClient.GetTransport(), err
 }

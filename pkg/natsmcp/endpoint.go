@@ -29,7 +29,13 @@ func (n *NatsToolEndpoint) NatsToolHandler(ctx context.Context, request mcp.Call
 		return nil, err
 	}
 
-	msg, err := n.nc.Request(n.subject, data, 10*time.Second)
+	remainingDuration := time.Second * 30
+	deadline, ok := ctx.Deadline()
+	if ok {
+		remainingDuration = time.Until(deadline)
+	}
+
+	msg, err := n.nc.Request(n.subject, data, remainingDuration)
 	if err != nil {
 		return nil, err
 	}

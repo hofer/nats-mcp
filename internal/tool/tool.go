@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-func StartTool(nc *nats.Conn, command string, env []string, args ...string) (micro.Service, error) {
+func StartTool(nc *nats.Conn, serverName string, command string, env []string, args ...string) (micro.Service, error) {
 	ctxClient, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	// Get tool information from the given command (connecting to the tool first):
-	mcpClient, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
+	mcpClient, transport, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func StartTool(nc *nats.Conn, command string, env []string, args ...string) (mic
 	// Convert the tools found to NatsMcpTools
 	var natsMcpTools []natsmcp.NatsMcpTool
 	for _, t := range tools.Tools {
-		log.Debugf("Tool: %s, Description: %s", t.Name, t.Description)
+		log.Debugf("Server: %s, Tool: %s, Description: %s", serverName, t.Name, t.Description)
 		mcpTool := natsmcp.NatsMcpTool{
 			Tool:    t,
 			Handler: mcpClient.CallTool,
@@ -41,6 +41,11 @@ func StartTool(nc *nats.Conn, command string, env []string, args ...string) (mic
 	// Expose the tools found as a NATS microservice:
 	log.Infof("🚀 Starting MCP Server and exposing tools...")
 	toolBox := natsmcp.NewNatsMcpToolBox(natsMcpTools...)
-	srv, err := natsmcp.AddToNewService(nc, toolBox, "NatsService")
+	srv, err := toolBox.AddToolsAsNatsService(nc, serverName)
+	if err != nil {
+		return srv, err
+	}
+
+	err = toolBox.AddTransportNatsService(srv, transport, serverName)
 	return srv, err
 }

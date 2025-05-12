@@ -56,7 +56,7 @@ func (n *McpEchoService) Start() error {
 	toolBox := natsmcp.NewNatsMcpToolBox(tools)
 
 	// Expose all tools in the toolbox as a Nats microservice
-	_, err := natsmcp.AddToNewService(n.nc, toolBox, "EchoService")
+	_, err := toolBox.AddToolsAsNatsService(n.nc, "EchoService")
 	if err != nil {
 		return err
 	}

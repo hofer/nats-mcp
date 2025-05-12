@@ -30,19 +30,4 @@ To then actually use the tool with your local agent, add the following command t
 Given the `--url` parameter is used for allmost all arguments, the `NATS_URL` environment variable is used as a default.
 
 
-## Useful links / inspiration:
 
-The following collection of links have been an inspiration for this project.
-
-### MCP Spec:
-- https://modelcontextprotocol.io/docs/concepts/tools
-
-### MCP SDKs:
-- https://github.com/metoro-io/mcp-golang or https://mcpgolang.com/introduction
-- https://github.com/mark3labs/mcp-go
-- https://github.com/mark3labs/mcphost
-
-### NATS:
-- Nats Service Discovery (code example): https://github.com/nats-io/natscli/blob/main/cli/service_command.go
-- Nats ADR: https://github.com/nats-io/nats-architecture-and-design
-- Nats Micro: https://github.com/nats-io/nats.go/blob/main/micro/README.md

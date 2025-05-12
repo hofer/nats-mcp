@@ -12,6 +12,7 @@ import (
 
 var configFile string
 var commandStr string
+var toolServerName string
 var environment []string
 
 var toolCmd = &cobra.Command{
@@ -41,14 +42,14 @@ just a few simple commands many different MCP servers can be made accessible via
 			for sName, c := range config.Servers {
 				// TODO: Fix passing envs...
 				log.Infof("Starting tool '%s'", sName)
-				err = StartTool(nc, c.Command, []string{}, c.Args...)
+				err = StartTool(nc, sName, c.Command, []string{}, c.Args...)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 
 		} else {
-			err = StartTool(nc, commandStr, environment, args...)
+			err = StartTool(nc, toolServerName, commandStr, environment, args...)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -59,8 +60,8 @@ just a few simple commands many different MCP servers can be made accessible via
 	},
 }
 
-func StartTool(nc *nats.Conn, cmd string, envs []string, args ...string) error {
-	_, err := tool.StartTool(nc, cmd, envs, args...)
+func StartTool(nc *nats.Conn, serverName string, cmd string, envs []string, args ...string) error {
+	_, err := tool.StartTool(nc, serverName, cmd, envs, args...)
 	return err
 }
 
@@ -70,6 +71,9 @@ func init() {
 	if os.Getenv("NATS_URL") == "" {
 		toolCmd.MarkFlagRequired("url")
 	}
+
+	toolCmd.Flags().StringVarP(&toolServerName,"name","n","","Server name (if used with commandline args)")
+//	toolCmd.MarkFlagRequired("name")
 
 	toolCmd.Flags().StringVarP(&configFile,"file","f","","JSON config file containing MCP server configurations.")
 
