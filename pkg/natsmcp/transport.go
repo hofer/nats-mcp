@@ -2,17 +2,17 @@ package natsmcp
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go"
-	"encoding/json"
 	"time"
 )
 
 func NewNats(nc *nats.Conn, subject string) *Nats {
 	return &Nats{
-		nc: nc,
+		nc:      nc,
 		subject: subject,
 	}
 }
@@ -40,6 +40,9 @@ func (t *Nats) SendRequest(ctx context.Context, request transport.JSONRPCRequest
 	}
 
 	msg, err := t.nc.Request(fmt.Sprintf("mcp_raw.%s", t.subject), data, remainingDuration)
+	if msg == nil {
+		return nil, fmt.Errorf("no response from server")
+	}
 
 	var result transport.JSONRPCResponse
 	err = json.Unmarshal(msg.Data, &result)
