@@ -9,6 +9,7 @@ github.com/mark3labs/mcp-go v0.20.1 h1:E1Bbx9K8d8kQmDZ1QHblM38c7UU2evQ2LlkANk1U/
 github.com/mark3labs/mcp-go v0.20.1/go.mod h1:KmJndYv7GIgcPVwEKJjNcbhVQ+hJGJhrCCB/9xITzpE=
 github.com/mark3labs/mcp-go v0.26.0/go.mod h1:rXqOudj/djTORU/ThxYx8fqEVj/5pvTuuebQ2RC7uk4=
 github.com/mark3labs/mcp-go v0.27.0/go.mod h1:rXqOudj/djTORU/ThxYx8fqEVj/5pvTuuebQ2RC7uk4=
+github.com/mark3labs/mcp-go v0.27.1/go.mod h1:rXqOudj/djTORU/ThxYx8fqEVj/5pvTuuebQ2RC7uk4=
 github.com/nats-io/nats.go v1.41.1 h1:lCc/i5x7nqXbspxtmXaV4hRguMPHqE/kYltG9knrCdU=
 github.com/nats-io/nats.go v1.41.1/go.mod h1:mzHiutcAdZrg6WLfYVKXGseqqow2fWmwlTEUOHsI4jY=
 github.com/nats-io/nats.go v1.42.0/go.mod h1:iRWIPokVIFbVijxuMQq4y9ttaBTMe0SFdlZfMDd+33g=
