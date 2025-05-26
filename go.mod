@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/klauspost/compress v1.18.0
-	github.com/mark3labs/mcp-go v0.27.1
+	github.com/mark3labs/mcp-go v0.30.0
 	github.com/nats-io/nats-server/v2 v2.11.4
 	github.com/nats-io/nats.go v1.42.0
 	github.com/sirupsen/logrus v1.9.3
