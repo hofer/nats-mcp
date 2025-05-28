@@ -1,15 +1,15 @@
 package natsmcp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/nats-io/nats.go/micro"
-	"bytes"
 	"github.com/klauspost/compress/s2"
 	"github.com/mark3labs/mcp-go/client/transport"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/micro"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"strings"
@@ -86,13 +86,12 @@ func (t *NatsMcpToolBox) GetHandlerFunc() micro.Handler {
 	return micro.HandlerFunc(t.mcpToolHandler)
 }
 
-
 func (t *NatsMcpToolBox) AddToolsAsNatsService(nc *nats.Conn, serviceName string) (micro.Service, error) {
 	srv, err := micro.AddService(nc, micro.Config{
 		Name:        fmt.Sprintf("%sMCP", serviceName),
 		Version:     "0.0.2",
 		Description: fmt.Sprintf("MCP service for %s exposing tools via NATS microservices.", serviceName),
-		})
+	})
 	if err != nil {
 		return srv, err
 	}
@@ -105,7 +104,7 @@ func (t *NatsMcpToolBox) AddToolsAsNatsService(nc *nats.Conn, serviceName string
 		t.GetHandlerFunc(),
 		micro.WithEndpointMetadata(map[string]string{
 			"mcp_tool": t.CreateMcpToolMetadata(),
-			}))
+		}))
 	return srv, err
 }
 
@@ -119,7 +118,7 @@ func (t *NatsMcpToolBox) AddTransportNatsService(srv micro.Service, trans transp
 			if err != nil {
 				log.Error(err)
 				msg := fmt.Sprintf("Error on mcp_raw request (unmarshalling request): %v", err)
-				errorResponse := mcp.NewJSONRPCError("", mcp.PARSE_ERROR, msg, "")
+				errorResponse := mcp.NewJSONRPCError(toolRequest.ID, mcp.PARSE_ERROR, msg, "")
 				data, _ := json.Marshal(errorResponse)
 				request.Respond(data)
 				return
@@ -129,7 +128,7 @@ func (t *NatsMcpToolBox) AddTransportNatsService(srv micro.Service, trans transp
 			if err != nil {
 				log.Error(err)
 				msg := fmt.Sprintf("Error on sending mcp_raw: %v", err)
-				errorResponse := mcp.NewJSONRPCError("", mcp.INTERNAL_ERROR, msg, "")
+				errorResponse := mcp.NewJSONRPCError(toolRequest.ID, mcp.INTERNAL_ERROR, msg, "")
 				data, _ := json.Marshal(errorResponse)
 				request.Respond(data)
 				return
@@ -150,20 +149,14 @@ func (t *NatsMcpToolBox) AddTransportNatsService(srv micro.Service, trans transp
 			err := json.Unmarshal(request.Data(), &toolRequest)
 			if err != nil {
 				log.Error(err)
-				msg := fmt.Sprintf("Error on mcp_notification request (unmarshalling request): %v", err)
-				errorResponse := mcp.NewJSONRPCError("", mcp.PARSE_ERROR, msg, "")
-				data, _ := json.Marshal(errorResponse)
-				request.Respond(data)
+				request.Respond([]byte(""))
 				return
 			}
 
 			err = trans.SendNotification(context.Background(), toolRequest)
 			if err != nil {
 				log.Error(err)
-				msg := fmt.Sprintf("Error on sending mcp_notification: %v", err)
-				errorResponse := mcp.NewJSONRPCError("", mcp.INTERNAL_ERROR, msg, "")
-				data, _ := json.Marshal(errorResponse)
-				request.Respond(data)
+				request.Respond([]byte(""))
 				return
 			}
 
@@ -291,4 +284,3 @@ func doReqAsync(req any, subj string, waitFor int, nc *nats.Conn, cb func([]byte
 
 	return nil
 }
-
