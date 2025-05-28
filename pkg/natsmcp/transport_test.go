@@ -73,7 +73,7 @@ func StartTool(nc *nats.Conn, transport *Nats) error {
 			)),
 		Handler: func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			log.Infof("Tool call for hello_echo.")
-			name, ok := request.Params.Arguments["name"].(string)
+			name, ok := request.GetArguments()["name"].(string)
 			if !ok {
 				return mcp.NewToolResultError("name must be a string"), nil
 			}
