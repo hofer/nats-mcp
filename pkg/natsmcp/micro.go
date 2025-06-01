@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/klauspost/compress/s2"
-	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/micro"
@@ -106,64 +105,6 @@ func (t *NatsMcpToolBox) AddToolsAsNatsService(nc *nats.Conn, serviceName string
 			"mcp_tool": t.CreateMcpToolMetadata(),
 		}))
 	return srv, err
-}
-
-func (t *NatsMcpToolBox) AddTransportNatsService(srv micro.Service, trans transport.Interface, serviceName string) error {
-	rawRoot := srv.AddGroup("mcp_raw")
-	err := rawRoot.AddEndpoint(
-		serviceName,
-		micro.HandlerFunc(func(request micro.Request) {
-			var toolRequest transport.JSONRPCRequest
-			err := json.Unmarshal(request.Data(), &toolRequest)
-			if err != nil {
-				log.Error(err)
-				msg := fmt.Sprintf("Error on mcp_raw request (unmarshalling request): %v", err)
-				errorResponse := mcp.NewJSONRPCError(toolRequest.ID, mcp.PARSE_ERROR, msg, "")
-				data, _ := json.Marshal(errorResponse)
-				request.Respond(data)
-				return
-			}
-
-			resp, err := trans.SendRequest(context.Background(), toolRequest)
-			if err != nil {
-				log.Error(err)
-				msg := fmt.Sprintf("Error on sending mcp_raw: %v", err)
-				errorResponse := mcp.NewJSONRPCError(toolRequest.ID, mcp.INTERNAL_ERROR, msg, "")
-				data, _ := json.Marshal(errorResponse)
-				request.Respond(data)
-				return
-			}
-
-			respData, err := json.Marshal(resp)
-			request.Respond(respData)
-		}))
-	if err != nil {
-		return err
-	}
-
-	notificationRoot := srv.AddGroup("mcp_notification")
-	err = notificationRoot.AddEndpoint(
-		serviceName,
-		micro.HandlerFunc(func(request micro.Request) {
-			var toolRequest mcp.JSONRPCNotification
-			err := json.Unmarshal(request.Data(), &toolRequest)
-			if err != nil {
-				log.Error(err)
-				request.Respond([]byte(""))
-				return
-			}
-
-			err = trans.SendNotification(context.Background(), toolRequest)
-			if err != nil {
-				log.Error(err)
-				request.Respond([]byte(""))
-				return
-			}
-
-			request.Respond([]byte(""))
-		}))
-
-	return err
 }
 
 // doReqAsync serializes and sends a request to the given subject and handles multiple responses.
