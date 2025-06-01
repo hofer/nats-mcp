@@ -1,38 +1,44 @@
-package natsmcp
+package transport
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/mark3labs/mcp-go/client"
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
-	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestNewNats(t *testing.T) {
+	// Create an embedded Nats server for testing...
 	nc := StartEmbeddedNats()
 
-	natsTransport := NewNats(nc, "example")
+	// Create a simple mock response
+	_, err := nc.Subscribe(fmt.Sprintf("%s.%s", RequestGroup, "nats-mcp-transport-test"), func(msg *nats.Msg) {
+		data, err := json.Marshal(transport.JSONRPCResponse{
+			Result: []byte("{ \"name\": \"TestResponse\"}"),
+		})
+		assert.NoError(t, err)
+		msg.Respond(data)
+	})
+	if err != nil {
+		t.Errorf("Error on subscribe to nats server: %v", err)
+	}
+
+	natsTransport := NewNats(nc, "nats-mcp-transport-test")
 	natsTransport.Start(context.Background())
 
-	StartTool(nc, natsTransport)
+	resp, err := natsTransport.SendRequest(context.Background(), transport.JSONRPCRequest{
+		Method: "mcp_raw.nats-mcp-transport-test",
+	})
+	if err != nil {
+		t.Errorf("Error on sending request: %v", err)
+	}
 
-	client.NewClient(natsTransport)
-
-	// TODO:
-	//c := client.NewClient(natsTransport)
-	//_, err := c.Initialize(context.Background(), mcp.InitializeRequest{})
-	//if err != nil {
-	//	t.Error(err)
-	//}
-
-	//toolsResult, err := c.ListTools(context.Background(), mcp.ListToolsRequest{})
-	//log.Info(toolsResult)
-
-	//c.CallTool(context.Background(), mcp.CallToolRequest{})
+	assert.Contains(t, string(resp.Result), "TestResponse")
 }
 
 func StartEmbeddedNats() *nats.Conn {
@@ -58,42 +64,4 @@ func StartEmbeddedNats() *nats.Conn {
 		panic(err)
 	}
 	return nc
-}
-
-func StartTool(nc *nats.Conn, transport *Nats) error {
-	log.Infof("Starting McpEchoService...")
-
-	// Create tools and corresponding Handlers:
-	tools := NatsMcpTool{
-		Tool: mcp.NewTool("hello_echo",
-			mcp.WithDescription("Say hello to someone"),
-			mcp.WithString("name",
-				mcp.Required(),
-				mcp.Description("Name of the person to greet"),
-			)),
-		Handler: func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			log.Infof("Tool call for hello_echo.")
-			name, ok := request.GetArguments()["name"].(string)
-			if !ok {
-				return mcp.NewToolResultError("name must be a string"), nil
-			}
-			return mcp.NewToolResultText(fmt.Sprintf("Hello, %s!", name)), nil
-		},
-	}
-
-	serviceName := "EchoService"
-
-	// Add all tools to a toolbox
-	toolBox := NewNatsMcpToolBox(tools)
-
-	// Expose all tools in the toolbox as a Nats microservice
-	srv, err := toolBox.AddToolsAsNatsService(nc, serviceName)
-	if err != nil {
-		return err
-	}
-
-	toolBox.AddTransportNatsService(srv, transport, serviceName)
-
-	log.Infof("Service connected at %s", nc.ConnectedAddr())
-	return nil
 }

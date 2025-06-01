@@ -1,4 +1,4 @@
-package natsmcp
+package transport
 
 import (
 	"context"
@@ -9,6 +9,11 @@ import (
 	"github.com/nats-io/nats.go"
 	"time"
 )
+
+const RequestGroup = "mcp_raw"
+const NotificationGroup = "mcp_notification"
+
+var _ transport.Interface = (*Nats)(nil)
 
 func NewNats(nc *nats.Conn, subject string) *Nats {
 	return &Nats{
@@ -39,7 +44,7 @@ func (t *Nats) SendRequest(ctx context.Context, request transport.JSONRPCRequest
 		remainingDuration = time.Until(deadline)
 	}
 
-	msg, err := t.nc.Request(fmt.Sprintf("mcp_raw.%s", t.subject), data, remainingDuration)
+	msg, err := t.nc.Request(fmt.Sprintf("%s.%s", RequestGroup, t.subject), data, remainingDuration)
 	if msg == nil {
 		return nil, fmt.Errorf("no response from server")
 	}
@@ -66,7 +71,7 @@ func (t *Nats) SendNotification(ctx context.Context, notification mcp.JSONRPCNot
 		remainingDuration = time.Until(deadline)
 	}
 
-	msg, err := t.nc.Request(fmt.Sprintf("mcp_notification.%s", t.subject), data, remainingDuration)
+	msg, err := t.nc.Request(fmt.Sprintf("%s.%s", NotificationGroup, t.subject), data, remainingDuration)
 
 	if len(msg.Data) > 0 {
 		return fmt.Errorf("Error on notification %s", string(msg.Data))
@@ -85,5 +90,3 @@ func (t *Nats) SetNotificationHandler(handler func(notification mcp.JSONRPCNotif
 func (t *Nats) Close() error {
 	return nil
 }
-
-var _ transport.Interface = (*Nats)(nil)

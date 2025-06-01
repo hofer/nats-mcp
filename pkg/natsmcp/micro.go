@@ -21,17 +21,17 @@ type NatsMcpTool struct {
 	Handler func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error)
 }
 
-func NewNatsMcpToolBox(natsTools ...NatsMcpTool) *NatsMcpToolBox {
-	return &NatsMcpToolBox{
+func NewNatsMcpToolBox(natsTools ...NatsMcpTool) *natsMcpToolBox {
+	return &natsMcpToolBox{
 		natsTools: natsTools,
 	}
 }
 
-type NatsMcpToolBox struct {
+type natsMcpToolBox struct {
 	natsTools []NatsMcpTool
 }
 
-func (t *NatsMcpToolBox) CreateMcpToolMetadata() string {
+func (t *natsMcpToolBox) CreateMcpToolMetadata() string {
 	tools := []mcp.Tool{}
 	for _, t := range t.natsTools {
 		tools = append(tools, t.Tool)
@@ -40,7 +40,7 @@ func (t *NatsMcpToolBox) CreateMcpToolMetadata() string {
 	return string(jsonStr)
 }
 
-func (t *NatsMcpToolBox) mcpToolHandler(request micro.Request) {
+func (t *natsMcpToolBox) mcpToolHandler(request micro.Request) {
 	// Get the tool request:
 	var toolRequest mcp.CallToolRequest
 	err := json.Unmarshal(request.Data(), &toolRequest)
@@ -77,15 +77,15 @@ func (t *NatsMcpToolBox) mcpToolHandler(request micro.Request) {
 	request.Respond([]byte("Error - maybe the tool could not be found?"))
 }
 
-func (t *NatsMcpToolBox) GetSubject() string {
+func (t *natsMcpToolBox) GetSubject() string {
 	return "mcp"
 }
 
-func (t *NatsMcpToolBox) GetHandlerFunc() micro.Handler {
+func (t *natsMcpToolBox) GetHandlerFunc() micro.Handler {
 	return micro.HandlerFunc(t.mcpToolHandler)
 }
 
-func (t *NatsMcpToolBox) AddToolsAsNatsService(nc *nats.Conn, serviceName string) (micro.Service, error) {
+func (t *natsMcpToolBox) AddToolsAsNatsService(nc *nats.Conn, serviceName string) (micro.Service, error) {
 	srv, err := micro.AddService(nc, micro.Config{
 		Name:        fmt.Sprintf("%sMCP", serviceName),
 		Version:     "0.0.2",

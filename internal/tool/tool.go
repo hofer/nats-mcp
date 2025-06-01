@@ -15,7 +15,8 @@ func StartTool(nc *nats.Conn, serverName string, command string, env []string, a
 	defer cancel()
 
 	// Get tool information from the given command (connecting to the tool first):
-	mcpClient, transport, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
+	//mcpClient, transport, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
+	mcpClient, _, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,6 +47,8 @@ func StartTool(nc *nats.Conn, serverName string, command string, env []string, a
 		return srv, err
 	}
 
-	err = toolBox.AddTransportNatsService(srv, transport, serverName)
+	// TODO: Do we want to expose tools as Raw services as well?
+	// Adding Nats Service for direct tool calling
+	// err = toolBox.AddTransportNatsService(srv, transport, serverName)
 	return srv, err
 }

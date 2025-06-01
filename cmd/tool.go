@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"github.com/hofer/nats-mcp/internal/tool"
 	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
@@ -28,13 +27,7 @@ just a few simple commands many different MCP servers can be made accessible via
 		}
 
 		if len(configFile) != 0 {
-			b, err := os.ReadFile(configFile)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			var config McpConfig
-			err = json.Unmarshal(b, &config)
+			config, err := LoadConfig(configFile)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -72,27 +65,13 @@ func init() {
 		toolCmd.MarkFlagRequired("url")
 	}
 
-	toolCmd.Flags().StringVarP(&toolServerName,"name","n","","Server name (if used with commandline args)")
-//	toolCmd.MarkFlagRequired("name")
+	toolCmd.Flags().StringVarP(&toolServerName, "name", "n", "", "Server name (if used with commandline args)")
+	//	toolCmd.MarkFlagRequired("name")
 
-	toolCmd.Flags().StringVarP(&configFile,"file","f","","JSON config file containing MCP server configurations.")
-
+	toolCmd.Flags().StringVarP(&configFile, "file", "f", "", "JSON config file containing MCP server configurations.")
 
 	toolCmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command to start the local MCP Server")
 	//toolCmd.MarkFlagRequired("command")
 
-	toolCmd.Flags().StringArrayVarP(&environment,"env","e",[]string{},"Define environment variables which should be added when running the command.")
+	toolCmd.Flags().StringArrayVarP(&environment, "env", "e", []string{}, "Define environment variables which should be added when running the command.")
 }
-
-
-
-type McpConfig struct {
-	Servers map[string]McpServerConfig `json:"servers"`
-}
-
-type McpServerConfig struct {
-	Command string `json:"command"`
-	Args []string `json:"args"`
-	Env map[string]string `json:"env"`
-}
-
