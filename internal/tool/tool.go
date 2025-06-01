@@ -3,6 +3,7 @@ package tool
 import (
 	"context"
 	"github.com/hofer/nats-mcp/pkg/natsmcp"
+	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/micro"
@@ -10,7 +11,7 @@ import (
 	"time"
 )
 
-func StartTool(nc *nats.Conn, serverName string, command string, env []string, args ...string) (micro.Service, error) {
+func StartStdioTools(nc *nats.Conn, serverName string, command string, env []string, args ...string) (micro.Service, error) {
 	ctxClient, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -21,6 +22,23 @@ func StartTool(nc *nats.Conn, serverName string, command string, env []string, a
 		return nil, err
 	}
 
+	return startTools(nc, mcpClient, serverName)
+}
+
+func StartSseTools(nc *nats.Conn, serverName string, baseUrl string) (micro.Service, error) {
+	ctxClient, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Get tool information from the given command (connecting to the tool first):
+	mcpClient, _, err := natsmcp.NewSSEMCPClient(ctxClient, baseUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return startTools(nc, mcpClient, serverName)
+}
+
+func startTools(nc *nats.Conn, mcpClient client.MCPClient, serverName string) (micro.Service, error) {
 	// Get all tools:
 	ctxList := context.Background()
 	tools, err := mcpClient.ListTools(ctxList, mcp.ListToolsRequest{})
