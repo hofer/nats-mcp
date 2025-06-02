@@ -16,7 +16,6 @@ func StartStdioTools(nc *nats.Conn, serverName string, command string, env []str
 	defer cancel()
 
 	// Get tool information from the given command (connecting to the tool first):
-	//mcpClient, transport, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
 	mcpClient, _, err := natsmcp.NewStdioMCPClient(ctxClient, command, env, args...)
 	if err != nil {
 		return nil, err

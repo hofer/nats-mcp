@@ -31,7 +31,7 @@ func NewSSEMCPClient(ctx context.Context, baseUrl string, options ...mcpTranspor
 	return stdioClient, stdioClient.GetTransport(), err
 }
 
-func NewNatsMCPClient(ctx context.Context, nc *nats.Conn, subject string) (mcpClient.MCPClient, mcpTransport.Interface, error) {
+func NewNatsMCPClient(nc *nats.Conn, ctx context.Context, subject string) (mcpClient.MCPClient, mcpTransport.Interface, error) {
 	natsClient, err := client.NewNatsMCPClient(nc, subject)
 	if err != nil {
 		return nil, nil, err
@@ -41,6 +41,7 @@ func NewNatsMCPClient(ctx context.Context, nc *nats.Conn, subject string) (mcpCl
 	_, err = natsClient.Initialize(ctx, initRequest)
 	return natsClient, natsClient.GetTransport(), err
 }
+
 func createInitRequest() mcp.InitializeRequest {
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION

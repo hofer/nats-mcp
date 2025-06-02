@@ -27,12 +27,12 @@ just a few simple commands many different MCP servers can be made accessible via
 			log.Fatal(err)
 		}
 
-		for sName, c := range config.Servers {
+		for sName, c := range config.GetStdioServers() {
 			// TODO: Fix passing envs...
-			log.Infof("Starting tool '%s'", sName)
+			log.Infof("Starting Stdio tool '%s'", sName)
 			err = StartStdioTool(nc, sName, c.Command, []string{}, c.Args...)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		}
 

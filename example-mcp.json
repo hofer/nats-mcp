@@ -1,10 +1,18 @@
 {
     "servers": {
         "brave-search": {
+            "type": "stdio",
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-brave-search"],
             "env": {
                 "BRAVE_API_KEY": "your-brave-api-key-here"
+            }
+        },
+        "local-sse": {
+            "type": "sse",
+            "url": "http://localhost:8080",
+            "headers": {
+                "": ""
             }
         }
     }
