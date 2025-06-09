@@ -16,23 +16,39 @@ func NewStdioMCPClient(ctx context.Context, command string, env []string, args .
 	}
 
 	initRequest := createInitRequest()
+
+	err = stdioClient.GetTransport().Start(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	_, err = stdioClient.Initialize(ctx, initRequest)
 	return stdioClient, stdioClient.GetTransport(), err
 }
 
 func NewSSEMCPClient(ctx context.Context, baseUrl string, options ...mcpTransport.ClientOption) (mcpClient.MCPClient, mcpTransport.Interface, error) {
-	stdioClient, err := mcpClient.NewSSEMCPClient(baseUrl, options...)
+	sseClient, err := mcpClient.NewSSEMCPClient(baseUrl, options...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = sseClient.GetTransport().Start(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	initRequest := createInitRequest()
-	_, err = stdioClient.Initialize(ctx, initRequest)
-	return stdioClient, stdioClient.GetTransport(), err
+	_, err = sseClient.Initialize(ctx, initRequest)
+	return sseClient, sseClient.GetTransport(), err
 }
 
 func NewNatsMCPClient(nc *nats.Conn, ctx context.Context, subject string) (mcpClient.MCPClient, mcpTransport.Interface, error) {
 	natsClient, err := client.NewNatsMCPClient(nc, subject)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = natsClient.GetTransport().Start(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
