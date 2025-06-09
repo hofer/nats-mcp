@@ -15,13 +15,12 @@ func NewStdioMCPClient(ctx context.Context, command string, env []string, args .
 		return nil, nil, err
 	}
 
-	initRequest := createInitRequest()
-
-	err = stdioClient.GetTransport().Start(ctx)
+	err = stdioClient.GetTransport().Start(context.Background())
 	if err != nil {
 		return nil, nil, err
 	}
 
+	initRequest := createInitRequest()
 	_, err = stdioClient.Initialize(ctx, initRequest)
 	return stdioClient, stdioClient.GetTransport(), err
 }
@@ -32,7 +31,7 @@ func NewSSEMCPClient(ctx context.Context, baseUrl string, options ...mcpTranspor
 		return nil, nil, err
 	}
 
-	err = sseClient.GetTransport().Start(ctx)
+	err = sseClient.GetTransport().Start(context.Background())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,7 +47,7 @@ func NewNatsMCPClient(nc *nats.Conn, ctx context.Context, subject string) (mcpCl
 		return nil, nil, err
 	}
 
-	err = natsClient.GetTransport().Start(ctx)
+	err = natsClient.GetTransport().Start(context.Background())
 	if err != nil {
 		return nil, nil, err
 	}
