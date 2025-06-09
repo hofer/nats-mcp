@@ -4,8 +4,8 @@ go 1.24.1
 
 require (
 	github.com/hofer/nats-mcp v0.0.0
-	github.com/mark3labs/mcp-go v0.30.0
-	github.com/nats-io/nats.go v1.42.0
+	github.com/mark3labs/mcp-go v0.31.0
+	github.com/nats-io/nats.go v1.43.0
 	github.com/sirupsen/logrus v1.9.3
 )
 
