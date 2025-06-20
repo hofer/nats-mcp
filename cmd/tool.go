@@ -27,10 +27,21 @@ just a few simple commands many different MCP servers can be made accessible via
 			log.Fatal(err)
 		}
 
+		// Start all Stdio tools defined in the config file:
 		for sName, c := range config.GetStdioServers() {
 			// TODO: Fix passing envs...
 			log.Infof("Starting Stdio tool '%s'", sName)
 			err = StartStdioTool(nc, sName, c.Command, []string{}, c.Args...)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
+		// Start all Stdio tools defined in the config file:
+		for sName, c := range config.GetSseServers() {
+			// TODO: Fix passing envs...
+			log.Infof("Starting SSE tool '%s'", sName)
+			err = StartSseTool(nc, sName, c.Url)
 			if err != nil {
 				log.Error(err)
 			}
