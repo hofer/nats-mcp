@@ -6,6 +6,7 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 func StartServer(nc *nats.Conn, serverName string, serverVersion string, transport string, ssePort string) error {
@@ -13,7 +14,13 @@ func StartServer(nc *nats.Conn, serverName string, serverVersion string, transpo
 	s := server.NewMCPServer(serverName, serverVersion)
 
 	// Lookup for all tools exposed via NATS:
-	natsmcp.RequestTools(nc, s)
+	go func() {
+		for {
+			log.Infof("(Re-)Loading tools from NATS server: %s", nc.ConnectedUrl())
+			natsmcp.RequestTools(nc, s)
+			time.Sleep(20 * time.Second)
+		}
+	}()
 
 	// Only check for "sse" since stdio is the default
 	if transport == "sse" {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -29,9 +30,14 @@ just a few simple commands many different MCP servers can be made accessible via
 
 		// Start all Stdio tools defined in the config file:
 		for sName, c := range config.GetStdioServers() {
-			// TODO: Fix passing envs...
 			log.Infof("Starting Stdio tool '%s'", sName)
-			err = StartStdioTool(nc, sName, c.Command, []string{}, c.Args...)
+
+			envs := []string{}
+			for k, v := range c.Env {
+				envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+			}
+
+			err = StartStdioTool(nc, sName, c.Command, envs, c.Args...)
 			if err != nil {
 				log.Error(err)
 			}
@@ -39,7 +45,6 @@ just a few simple commands many different MCP servers can be made accessible via
 
 		// Start all Stdio tools defined in the config file:
 		for sName, c := range config.GetSseServers() {
-			// TODO: Fix passing envs...
 			log.Infof("Starting SSE tool '%s'", sName)
 			err = StartSseTool(nc, sName, c.Url)
 			if err != nil {
