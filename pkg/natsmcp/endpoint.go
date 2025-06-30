@@ -49,9 +49,10 @@ func (n *NatsToolEndpoint) NatsToolHandler(ctx context.Context, request mcp.Call
 	return result, err
 }
 
-func RequestTools(nc *nats.Conn, mcpServer *server.MCPServer) []mcp.Tool {
+func RequestTools(nc *nats.Conn, mcpServer *server.MCPServer) ([]mcp.Tool, error) {
 	tools := []mcp.Tool{}
-	doReqAsync(nil, "$SRV.INFO", 0, nc, func(r []byte) {
+	serverTools := []server.ServerTool{}
+	err := doReqAsync(nil, "$SRV.INFO", 0, nc, func(r []byte) {
 		var info micro.Info
 		json.Unmarshal(r, &info)
 
@@ -61,11 +62,20 @@ func RequestTools(nc *nats.Conn, mcpServer *server.MCPServer) []mcp.Tool {
 			for _, t := range tool {
 				// Add Nats tool handler
 				nte := NewNatsToolEndpoint(nc, e.Subject)
-				mcpServer.AddTool(t, nte.NatsToolHandler)
+				serverTools = append(serverTools, server.ServerTool{
+					Tool:    t,
+					Handler: nte.NatsToolHandler,
+				})
 			}
 
 			tools = append(tools, tool...)
 		}
 	})
-	return tools
+
+	if err != nil {
+		return []mcp.Tool{}, err
+	}
+
+	mcpServer.SetTools(serverTools...)
+	return tools, nil
 }

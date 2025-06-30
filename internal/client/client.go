@@ -14,7 +14,10 @@ func ListTools(nc *nats.Conn) error {
 		"1.0.0",
 	)
 
-	tools := natsmcp.RequestTools(nc, s)
+	tools, err := natsmcp.RequestTools(nc, s)
+	if err != nil {
+		return err
+	}
 
 	// Add implementation to get tools:
 	for _, t := range tools {
