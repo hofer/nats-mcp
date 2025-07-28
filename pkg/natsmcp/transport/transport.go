@@ -90,3 +90,9 @@ func (t *Nats) SetNotificationHandler(handler func(notification mcp.JSONRPCNotif
 func (t *Nats) Close() error {
 	return nil
 }
+
+func (t *Nats) GetSessionId() string {
+	// NATS does not have a session ID concept like gRPC or HTTP.
+	// This can be implemented if needed, but for now, we return an empty string.
+	return ""
+}
