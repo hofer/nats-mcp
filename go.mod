@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/charmbracelet/fang v0.4.0
 	github.com/klauspost/compress v1.18.0
-	github.com/mark3labs/mcp-go v0.39.0
+	github.com/mark3labs/mcp-go v0.39.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/nats-server/v2 v2.11.8
 	github.com/nats-io/nats.go v1.45.0
