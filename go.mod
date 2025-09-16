@@ -3,7 +3,7 @@ module github.com/hofer/nats-mcp
 go 1.24.1
 
 require (
-	github.com/charmbracelet/fang v0.4.0
+	github.com/charmbracelet/fang v0.4.1
 	github.com/klauspost/compress v1.18.0
 	github.com/mark3labs/mcp-go v0.39.1
 	github.com/mitchellh/mapstructure v1.5.0
